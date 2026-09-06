@@ -25,6 +25,7 @@ export async function POST(req:Request,{params}:{params:Promise<{id:string}>}){
   await supabase.from('conversations').update({updated_at:new Date().toISOString()}).eq('id',id);
   const {data:participants}=await supabase.from('conversations').select('renter_id,owner_id,listings(title)').eq('id',id).single();
   const recipient=participants && (participants.renter_id===user.id?participants.owner_id:participants.renter_id);
-  if(recipient) await supabase.from('notifications').insert({user_id:recipient,type:'new_message',title:'New RentHub message',body:`You received a new message about ${participants?.listings?.title||'a rental listing'}.`});
+  const listingTitle=(Array.isArray(participants?.listings)?participants.listings[0]?.title:(participants?.listings as {title?:string}|null|undefined)?.title)||'a rental listing';
+  if(recipient) await supabase.from('notifications').insert({user_id:recipient,type:'new_message',title:'New RentHub message',body:`You received a new message about ${listingTitle}.`});
   return NextResponse.json({ok:true,message});
 }

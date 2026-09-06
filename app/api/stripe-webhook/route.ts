@@ -23,7 +23,7 @@ export async function POST(req:Request) {
     const id=session.metadata?.listing_id, action=session.metadata?.action, ownerId=session.metadata?.owner_id;
     if(id && ownerId) {
       const {data:listing}=await sb.from("listings").select("expires_at,owner_id,status").eq("id",id).single();
-      if(listing?.owner_id === ownerId) {
+      if(listing && listing.owner_id === ownerId) {
         const now=new Date();
         if(action==="renew") {
           const base=listing.expires_at && new Date(listing.expires_at)>now?new Date(listing.expires_at):now;
