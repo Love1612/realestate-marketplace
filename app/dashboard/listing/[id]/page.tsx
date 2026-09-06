@@ -37,6 +37,18 @@ export default function EditListing() {
     }).eq("id",id);
     if(error){setError(error.message);setBusy(false);return;}
 
+    // Refresh the stored map pin whenever the owner changes the address.
+    try {
+      const locationQuery = `${listing.address}, ${listing.city}, ${listing.state} ${listing.zip}`;
+      const geo = await fetch(`/api/geocode?q=${encodeURIComponent(locationQuery)}`);
+      if (geo.ok) {
+        const g = await geo.json();
+        if (Number.isFinite(Number(g.lat)) && Number.isFinite(Number(g.lon))) {
+          await supabase.from("listings").update({latitude:Number(g.lat),longitude:Number(g.lon),location_updated_at:new Date().toISOString()}).eq("id",id).eq("owner_id",listing.owner_id);
+        }
+      }
+    } catch {}
+
     if(existing.length + newFiles.length > 12){ setError('A listing can have at most 12 photos.'); setBusy(false); return; }
     for(let i=0;i<newFiles.length;i++){
       const f=newFiles[i];

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase-server";
 import { stripe } from "@/lib/stripe";
+import { LISTING_PLANS } from "@/lib/pricing";
 
 export async function POST(_:Request,{params}:{params:Promise<{id:string}>}) {
   const {id}=await params;
@@ -13,7 +14,7 @@ export async function POST(_:Request,{params}:{params:Promise<{id:string}>}) {
   if(!expired) return NextResponse.json({error:"This listing is still active."},{status:400});
   const session=await stripe.checkout.sessions.create({
     mode:"payment",
-    line_items:[{price_data:{currency:"usd",product_data:{name:"RentHub listing renewal — 30 days"},unit_amount:500},quantity:1}],
+    line_items:[{price_data:{currency:"usd",product_data:{name:`RentHub ${LISTING_PLANS[(listing.plan || 'basic') as keyof typeof LISTING_PLANS]?.name || 'Basic'} renewal — 30 days`},unit_amount:LISTING_PLANS[(listing.plan || 'basic') as keyof typeof LISTING_PLANS]?.cents || 500},quantity:1}],
     success_url:`${process.env.NEXT_PUBLIC_SITE_URL}/dashboard?renewed=1`,
     cancel_url:`${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`,
     metadata:{listing_id:id,action:"renew",owner_id:user.id}

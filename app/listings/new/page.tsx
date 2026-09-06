@@ -4,11 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 import PhotoUploader from "@/components/PhotoUploader";
+import { LISTING_PLANS } from "@/lib/pricing";
 
 export default function NewListing() {
   const router = useRouter();
   const [files, setFiles] = useState<File[]>([]);
-  const [form, setForm] = useState({ title:"", description:"", property_type:"House", address:"", city:"", state:"", zip:"", monthly_rent:"", bedrooms:"", bathrooms:"", available_on:"" });
+  const [form, setForm] = useState({ title:"", description:"", property_type:"House", address:"", city:"", state:"", zip:"", monthly_rent:"", bedrooms:"", bathrooms:"", available_on:"", total_monthly_fees:"", security_deposit:"", pets_allowed:false, parking:"", plan:"basic" });
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -22,7 +23,7 @@ export default function NewListing() {
 
       const res = await fetch("/api/listings", {
         method:"POST", headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({...form, monthly_rent:Number(form.monthly_rent), bedrooms:Number(form.bedrooms || 0), bathrooms:Number(form.bathrooms || 0)})
+        body: JSON.stringify({...form, monthly_rent:Number(form.monthly_rent), bedrooms:Number(form.bedrooms || 0), bathrooms:Number(form.bathrooms || 0), total_monthly_fees:Number(form.total_monthly_fees||0), security_deposit:Number(form.security_deposit||0)})
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Could not create listing.");
@@ -52,7 +53,7 @@ export default function NewListing() {
     <main className="section"><div className="container">
       <div className="form">
         <h1>List your property</h1>
-        <p className="muted">It costs $5 to publish for 30 days. You can edit the listing during that time.</p>
+        <p className="muted">Choose a plan for 30 days. Basic is $5, Featured is $8, and Premium is $12. You can edit the listing during that time.</p>
         {error && <div className="alert">{error}</div>}
         <form onSubmit={submit}>
           <div className="field"><label>Listing title</label><input className="input" required placeholder="Bright 2-bedroom home near downtown" value={form.title} onChange={e=>update("title",e.target.value)} /></div>
@@ -70,13 +71,14 @@ export default function NewListing() {
             <div className="field"><label>City</label><input className="input" required value={form.city} onChange={e=>update("city",e.target.value)} /></div>
             <div className="field"><label>State</label><input className="input" required value={form.state} onChange={e=>update("state",e.target.value)} /></div>
           </div>
-          <div className="form-row">
+          <div className="form-row"><div className="field"><label>Fixed monthly fees</label><input className="input" type="number" min="0" value={form.total_monthly_fees} onChange={e=>update("total_monthly_fees",e.target.value)} /></div><div className="field"><label>Security deposit</label><input className="input" type="number" min="0" value={form.security_deposit} onChange={e=>update("security_deposit",e.target.value)} /></div></div><div className="form-row">
             <div className="field"><label>ZIP code</label><input className="input" required value={form.zip} onChange={e=>update("zip",e.target.value)} /></div>
             <div className="field"><label>Available on</label><input className="input" type="date" value={form.available_on} onChange={e=>update("available_on",e.target.value)} /></div>
           </div>
+          <div className="field"><label>Listing plan</label><div className="form-row">{Object.entries(LISTING_PLANS).map(([key,p])=><label key={key} className="panel" style={{cursor:"pointer",display:"block"}}><input type="radio" name="plan" value={key} checked={form.plan===key} onChange={()=>update("plan",key)} /> <strong>{p.name}</strong> — {p.label}<div className="muted">{key==="basic"?"Standard placement":key==="featured"?"Extra visibility and featured placement":"Maximum visibility and rich-media emphasis"}</div></label>)}</div></div>
           <div className="field"><label>Photos</label><PhotoUploader files={files} setFiles={setFiles} /></div>
-          <div className="panel" style={{margin:"18px 0"}}><strong>Before you publish</strong><p className="muted">You will review your photos here, then pay the one-time $5 listing fee. RentHub does not take a percentage of rent.</p></div>
-          <button className="btn btn-primary" disabled={busy}>{busy ? "Preparing your listing…" : "Continue to $5 payment"}</button>
+          <div className="panel" style={{margin:"18px 0"}}><strong>Before you publish</strong><p className="muted">Your selected plan will be charged once for 30 days. Fixed monthly fees are shown separately so renters can understand total monthly cost. RentHub does not take a percentage of rent.</p></div>
+          <button className="btn btn-primary" disabled={busy}>{busy ? "Preparing your listing…" : "Continue to secure payment"}</button>
         </form>
       </div>
     </div></main>

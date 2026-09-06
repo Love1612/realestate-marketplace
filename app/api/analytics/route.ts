@@ -1,0 +1,2 @@
+import {NextRequest,NextResponse} from 'next/server'; import {createServerSupabaseClient} from '@/lib/supabase-server';
+export async function POST(req:NextRequest){const sb=await createServerSupabaseClient();const {data:{user}}=await sb.auth.getUser();const b=await req.json();if(!b.listing_id)return NextResponse.json({error:'listing_id required'},{status:400});await sb.from('listing_views').insert({listing_id:b.listing_id,viewer_id:user?.id||null,session_id:String(b.session_id||'').slice(0,100)||null});return NextResponse.json({ok:true});}

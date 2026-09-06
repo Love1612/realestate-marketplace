@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase";
+import OwnerInsights from "@/components/OwnerInsights";
 
 export default function Dashboard() {
   const [listings,setListings]=useState<any[]>([]);
@@ -22,7 +23,7 @@ export default function Dashboard() {
   if(loading) return <main className="section"><div className="container">Loading your listings…</div></main>;
 
   return <main className="section"><div className="container">
-    <div style={{display:"flex",justifyContent:"space-between",gap:15,alignItems:"center",marginBottom:22,flexWrap:"wrap"}}>
+    <OwnerInsights listings={listings}/><div style={{display:"flex",justifyContent:"space-between",gap:15,alignItems:"center",marginBottom:22,flexWrap:"wrap"}}>
       <div><h1 style={{marginBottom:5}}>My listings</h1><p className="muted">Manage photos, details, and renewals in one place.</p></div>
       <div className="dashboard-actions"><Link className="btn btn-light" href="/dashboard/inquiries">Messages</Link><Link className="btn btn-primary" href="/listings/new">+ Add a property</Link></div>
     </div>
@@ -37,7 +38,7 @@ export default function Dashboard() {
           <div className="card-body">
             <div style={{display:"flex",justifyContent:"space-between",gap:8}}><span className={`badge ${status}`}>{status}</span><span className="muted">{l.property_type}</span></div>
             <h3>{l.title}</h3><div className="price">${Number(l.monthly_rent).toLocaleString()}/mo</div><p className="muted">{l.city}, {l.state}</p>
-            <p className="muted">{expired ? "Expired" : l.expires_at ? `Runs through ${new Date(l.expires_at).toLocaleDateString()}` : "Not published yet"}</p>
+            <p className="muted">{expired ? "Expired" : l.expires_at ? `Runs through ${new Date(l.expires_at).toLocaleDateString()} · ${l.plan||"basic"}` : "Not published yet"}</p>
             <div className="dashboard-actions"><Link className="btn btn-secondary" href={`/dashboard/listing/${l.id}`}>Edit listing</Link>{status==="expired" && <RenewButton id={l.id} />}</div>
           </div>
         </div>

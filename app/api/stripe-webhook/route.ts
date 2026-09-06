@@ -17,10 +17,20 @@ export async function POST(req:Request) {
   if(dedupeError?.code==='23505') return NextResponse.json({received:true,duplicate:true});
   if(dedupeError) return new NextResponse("Webhook storage error",{status:500});
 
+
+  if(event.type==="checkout.session.completed") {
+    const session=event.data.object as any;
+    if(session.mode==='subscription' && session.metadata?.organization_id){
+      const orgId=session.metadata.organization_id; const tier=session.metadata.tier; const limit=Number(session.metadata.active_listings_limit||10);
+      await sb.from('organization_billing').upsert({organization_id:orgId,tier,active_listings_limit:limit,status:'active',stripe_customer_id:String(session.customer||''),stripe_subscription_id:String(session.subscription||''),updated_at:new Date().toISOString()},{onConflict:'organization_id'});
+      return NextResponse.json({received:true});
+    }
+  }
+
   if(event.type==="checkout.session.completed") {
     const session=event.data.object as any;
     if(session.payment_status !== 'paid') return NextResponse.json({received:true});
-    const id=session.metadata?.listing_id, action=session.metadata?.action, ownerId=session.metadata?.owner_id;
+    const id=session.metadata?.listing_id, action=session.metadata?.action, ownerId=session.metadata?.owner_id, plan=session.metadata?.plan;
     if(id && ownerId) {
       const {data:listing}=await sb.from("listings").select("expires_at,owner_id,status").eq("id",id).single();
       if(listing && listing.owner_id === ownerId) {
@@ -28,7 +38,7 @@ export async function POST(req:Request) {
         if(action==="renew") {
           const base=listing.expires_at && new Date(listing.expires_at)>now?new Date(listing.expires_at):now;
           base.setDate(base.getDate()+30);
-          await sb.from("listings").update({status:"live",published_at:now.toISOString(),expires_at:base.toISOString(),updated_at:now.toISOString()}).eq("id",id).eq("owner_id",ownerId);
+          await sb.from("listings").update({status:"live",published_at:now.toISOString(),expires_at:base.toISOString(),updated_at:now.toISOString(),...(plan?{plan}: {})}).eq("id",id).eq("owner_id",ownerId);
         } else if(listing.status==='pending_payment') {
           const expires=new Date(now); expires.setDate(expires.getDate()+30);
           await sb.from("listings").update({status:"live",published_at:now.toISOString(),expires_at:expires.toISOString(),updated_at:now.toISOString()}).eq("id",id).eq("owner_id",ownerId).eq("status","pending_payment");

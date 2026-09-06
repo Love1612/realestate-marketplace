@@ -14,6 +14,10 @@ export function validateListingInput(body: any) {
   const bedrooms = Number(body.bedrooms ?? 0);
   const bathrooms = Number(body.bathrooms ?? 0);
   const available_on = body.available_on ? text(body.available_on, 10) : null;
+  const total_monthly_fees = Number(body.total_monthly_fees ?? 0);
+  const security_deposit = Number(body.security_deposit ?? 0);
+  const pets_allowed = Boolean(body.pets_allowed);
+  const parking = text(body.parking, 200);
 
   if (title.length < 3 || description.length < 10) throw new Error('Please provide a clear title and description.');
   if (!PROPERTY_TYPES.has(property_type)) throw new Error('Please choose a valid property type.');
@@ -22,6 +26,8 @@ export function validateListingInput(body: any) {
   if (!Number.isFinite(bedrooms) || bedrooms < 0 || bedrooms > 1000) throw new Error('Enter a valid bedroom count.');
   if (!Number.isFinite(bathrooms) || bathrooms < 0 || bathrooms > 1000) throw new Error('Enter a valid bathroom count.');
   if (available_on && !/^\d{4}-\d{2}-\d{2}$/.test(available_on)) throw new Error('Enter a valid availability date.');
+  if (!Number.isFinite(total_monthly_fees) || total_monthly_fees < 0) throw new Error('Enter valid monthly fees.');
+  if (!Number.isFinite(security_deposit) || security_deposit < 0) throw new Error('Enter a valid security deposit.');
 
-  return { title, description, property_type, address, city, state, zip, monthly_rent, bedrooms, bathrooms, available_on };
+  return { title, description, property_type, address, city, state, zip, monthly_rent, bedrooms, bathrooms, available_on, total_monthly_fees, security_deposit, pets_allowed, parking };
 }

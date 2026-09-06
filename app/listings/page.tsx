@@ -1,39 +1,4 @@
 "use client";
-
-import { useEffect, useState } from "react";
-import Link from "next/link";
-import { createClient } from "@/lib/supabase";
-
-const types = ["House","Apartment","Condo","Townhome","Room","Duplex","Triplex","Fourplex","Multi-family","Cabin","Vacation rental","RV space","Parking","Commercial","Office/Retail","Land","Warehouse/Industrial","Other"];
-
-export default function Listings() {
-  const [listings,setListings]=useState<any[]>([]);
-  const [q,setQ]=useState(""); const [type,setType]=useState(""); const [max,setMax]=useState("");
-  const [beds,setBeds]=useState(""); const [loading,setLoading]=useState(true);
-
-  async function load(){
-    setLoading(true);
-    const supabase=createClient();
-    let query=supabase.from("listings").select("*,listing_photos(public_url,sort_order)")
-      .eq("status","live").gt("expires_at",new Date().toISOString()).order("created_at",{ascending:false});
-    if(q.trim()) query=query.or(`city.ilike.%${q.trim()}%,state.ilike.%${q.trim()}%,title.ilike.%${q.trim()}%,zip.ilike.%${q.trim()}%`);
-    if(type) query=query.eq("property_type",type);
-    if(max) query=query.lte("monthly_rent",Number(max));
-    if(beds) query=query.gte("bedrooms",Number(beds));
-    const {data}=await query; setListings(data||[]);setLoading(false);
-  }
-  useEffect(()=>{load()},[]);
-
-  return <main className="section"><div className="container">
-    <h1>Find a rental</h1><p className="muted">Search by location, price, property type, and bedrooms.</p>
-    <div className="searchbox" style={{marginBottom:25}}>
-      <input className="input" value={q} onChange={e=>setQ(e.target.value)} onKeyDown={e=>e.key==="Enter"&&load()} placeholder="City, ZIP, or keyword"/>
-      <select className="input" value={type} onChange={e=>setType(e.target.value)}><option value="">Any property type</option>{types.map(x=><option key={x}>{x}</option>)}</select>
-      <select className="input" value={beds} onChange={e=>setBeds(e.target.value)}><option value="">Any bedrooms</option><option value="1">1+ bedroom</option><option value="2">2+ bedrooms</option><option value="3">3+ bedrooms</option><option value="4">4+ bedrooms</option></select>
-      <select className="input" value={max} onChange={e=>setMax(e.target.value)}><option value="">Any rent</option><option value="1000">$1,000 or less</option><option value="1500">$1,500 or less</option><option value="2000">$2,000 or less</option><option value="3000">$3,000 or less</option><option value="5000">$5,000 or less</option></select>
-      <button className="btn btn-primary" onClick={load}>Search</button>
-    </div>
-    {loading?<p>Finding rentals…</p>:!listings.length?<div className="empty"><h3>No matching rentals</h3><p className="muted">Try removing a filter or searching a nearby city.</p></div>:
-      <><p className="muted" style={{marginBottom:12}}>{listings.length} rental{listings.length===1?"":"s"} found</p><div className="grid">{listings.map(l=>{const photo=(l.listing_photos||[]).sort((a:any,b:any)=>a.sort_order-b.sort_order)[0];return <Link href={`/listings/${l.id}`} className="card" key={l.id}>{photo?<img className="listing-image" src={photo.public_url} alt=""/>:<div className="listing-image"/>}<div className="card-body"><div className="muted">{l.property_type}</div><h3>{l.title}</h3><div className="price">${Number(l.monthly_rent).toLocaleString()}/mo</div><p className="muted">{l.city}, {l.state} · {l.bedrooms||0} bd · {l.bathrooms||0} ba</p></div></Link>})}</div></>}
-  </div></main>
-}
+import Link from "next/link"; import {useEffect,useMemo,useState} from "react"; import MapView from "@/components/MapView";
+const types=["House","Apartment","Condo","Townhome","Room","Duplex","Triplex","Fourplex","Multi-family","Cabin","Vacation rental","RV space","Parking","Commercial","Office/Retail","Land","Warehouse/Industrial","Other"];
+export default function ListingsPage(){const[q,setQ]=useState("");const[type,setType]=useState("");const[maxRent,setMaxRent]=useState("");const[beds,setBeds]=useState("");const[items,setItems]=useState<any[]>([]);const[loading,setLoading]=useState(true);const[map,setMap]=useState(false);const[smart,setSmart]=useState(false);const[smartMsg,setSmartMsg]=useState("");async function load(){setLoading(true);const r=await fetch("/api/public-listings");if(r.ok){const d=await r.json();setItems(d.listings||[])}setLoading(false)}useEffect(()=>{load()},[]);const filtered=useMemo(()=>items.filter(l=>{const text=`${l.title} ${l.city} ${l.state} ${l.zip} ${l.address} ${l.description}`.toLowerCase();return(!q||text.includes(q.toLowerCase()))&&(!type||l.property_type===type)&&(!maxRent||Number(l.monthly_rent)<=Number(maxRent))&&(!beds||Number(l.bedrooms)>=Number(beds))}),[items,q,type,maxRent,beds]);const points=filtered.filter(l=>Number.isFinite(Number(l.latitude))&&Number.isFinite(Number(l.longitude))).map(l=>({id:l.id,title:l.title,lat:Number(l.latitude),lon:Number(l.longitude),price:Number(l.monthly_rent),href:`/listings/${l.id}`}));async function smartSearch(){const r=await fetch('/api/smart-search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({query:q})});const x=await r.json();if(x.maxRent)setMaxRent(String(x.maxRent));if(x.minBedrooms)setBeds(String(x.minBedrooms));if(x.propertyType){const match=types.find(t=>t.toLowerCase()===x.propertyType);if(match)setType(match)}if(x.city)setQ(x.city);setSmartMsg(`Smart search applied${x.maxRent?` · up to $${x.maxRent}`:''}${x.minBedrooms?` · ${x.minBedrooms}+ beds`:''}${x.propertyType?` · ${x.propertyType}`:''}.`)}async function saveSearch(){const r=await fetch('/api/saved-searches',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:q||'Rental search',query:q,max_rent:maxRent,min_bedrooms:beds,property_type:type,alerts_enabled:true})});if(r.ok)alert('Saved. You can manage alerts from Saved searches.');else alert('Please sign in to save a search.')}return <main className="section"><div className="container"><div className="toolbar"><div><h1 style={{marginBottom:6}}>Find a rental</h1><p className="muted">Search by location, price, property type, bedrooms, and total monthly cost.</p></div><button className="btn btn-secondary" onClick={()=>setMap(!map)}>{map?"☷ List view":"⌖ Map view"}</button></div><div className="searchbox"><input className="input" placeholder='Try “2 bedroom apartment under $1500”' value={q} onChange={e=>setQ(e.target.value)}/><select className="input" value={type} onChange={e=>setType(e.target.value)}><option value="">Any property type</option>{types.map(x=><option key={x}>{x}</option>)}</select><input className="input" type="number" min="0" placeholder="Max rent" value={maxRent} onChange={e=>setMaxRent(e.target.value)}/><select className="input" value={beds} onChange={e=>setBeds(e.target.value)}><option value="">Any bedrooms</option>{[1,2,3,4,5].map(x=><option key={x} value={x}>{x}+ bedrooms</option>)}</select><button className="btn btn-secondary" onClick={smartSearch}>Smart search</button><button className="btn btn-light" onClick={saveSearch}>🔔 Save alert</button></div>{smartMsg&&<p className="muted">{smartMsg}</p>}{loading?<p style={{marginTop:20}}>Loading rentals…</p>:<><p className="muted" style={{margin:"18px 0 12px"}}>{filtered.length} rental{filtered.length===1?"":"s"} found{map&&points.length<filtered.length?" · some listings are still being located":""}</p>{map?<div className="map-panel"><MapView points={points}/>{!points.length&&<div className="map-empty">No mapped listings match these filters yet.</div>}</div>:<div className="grid">{filtered.map(l=>{const photo=(l.listing_photos||[]).sort((a:any,b:any)=>a.sort_order-b.sort_order)[0];return <Link href={`/listings/${l.id}`} className="card" key={l.id}>{photo?<img className="listing-image" src={photo.public_url} alt=""/>:<div className="listing-image"/>}<div className="card-body"><div className="muted">{l.property_type}</div><h3>{l.title}</h3><div className="price">${Number(l.monthly_rent).toLocaleString()}/mo</div><p className="muted">Total est. ${Number(l.monthly_rent+l.total_monthly_fees||l.monthly_rent).toLocaleString()}/mo · {l.city}, {l.state} · {l.bedrooms||0} bd · {l.bathrooms||0} ba</p><span className="badge">{l.verification_status==='owner_confirmed'?'✓ Confirmed':'Freshness not confirmed'}</span></div></Link>})}</div>}</>}</div></main>}

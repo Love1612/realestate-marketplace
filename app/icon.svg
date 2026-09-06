@@ -1,0 +1,8 @@
+<svg width="128" height="128" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="RentHub">
+  <defs><linearGradient id="s" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#dfe3e8"/><stop offset="1" stop-color="#707a85"/></linearGradient></defs>
+  <path d="M10 57 64 10l54 47v61H85V82H43v36H10Z" fill="#0b2341"/>
+  <path d="m64 10 24 21v36H64Z" fill="url(#s)"/>
+  <path d="M43 82h42v36H43z" fill="#8a949f"/>
+  <path d="M52 64h11v18H52zM69 64h11v18H69z" fill="#fff"/>
+  <path d="M64 44 44 61h40Z" fill="#fff"/>
+</svg>

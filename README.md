@@ -1,71 +1,43 @@
-# RentHub — User-Friendly Rental Marketplace MVP
+# RentHub v12
 
-RentHub is a simple rental marketplace where property owners can publish listings for **$5 for 30 days**. The platform does **not** take a percentage of rent.
+RentHub is a mobile-first rental marketplace for renters, independent owners, and multi-property organizations.
 
-## UX priorities built into this version
+## v12 launch features
+- Basic $5 / 30 days, Featured $8 / 30 days, Premium $12 / 30 days.
+- Portfolio tiers: 10/$35, 25/$70, 50/$140, 100/$225, 250/$450 monthly; 500+ custom.
+- Portfolio/community/unit architecture for apartment communities and multifamily operators.
+- Search + map, smart natural-language search, filters, saved searches and alert matching.
+- Total monthly-cost transparency fields, deposit, pets, parking and amenities-ready listing model.
+- Owner-confirmed freshness and verification badges.
+- Tour requests with in-person or video-tour modes.
+- Owner market pricing intelligence and listing analytics.
+- Bulk CSV import and syndication-ready JSON feed export.
+- Social publishing connectors, messaging, favorites, reports, admin tools, Stripe checkout and Supabase auth.
+- SEO metadata, legal/fair-housing pages, security headers and mobile-friendly UI.
 
-- Mobile-friendly layout
-- Plain-language buttons and instructions
-- Passwordless email login
-- Photo previews before payment
-- Up to 12 photos per listing
-- First photo is the cover
-- Simple left/right photo reordering
-- Remove photos
-- Owner dashboard with clear status
-- Edit listings without paying again during the active 30-day period
-- Renew expired listings for $5
-- Public renters only see active, non-expired listings
-- Stripe Checkout handles the $5 listing fee
-- Stripe webhook is the source of truth for publishing/renewing
+## Stack
+Next.js 15, React 19, TypeScript, Supabase/Postgres/Auth/Storage, Stripe, Vercel, Leaflet/OpenStreetMap.
+
+Supabase's current Next.js guidance uses cookie-based SSR auth and publishable keys in environment variables; review RLS before production. citeturn0search1turn0search2
 
 ## Setup
+1. Upload the project to GitHub.
+2. In Supabase SQL Editor, run `supabase/schema.sql`.
+3. Add the variables from `.env.example` to Vercel and Supabase where appropriate.
+4. In Stripe, configure the webhook to `/api/stripe-webhook` and add the webhook secret.
+5. Configure OAuth/social provider credentials for the connectors you want enabled.
+6. Deploy on Vercel.
+7. Run `npm install`, `npm run typecheck`, and `npm run build` before launch.
 
-1. Create a Supabase project.
-2. Open `supabase/schema.sql` in the Supabase SQL editor and run it.
-3. Create a Stripe account and set up a webhook pointing to:
-   `/api/stripe-webhook`
-   Subscribe to `checkout.session.completed`.
-4. Copy `.env.example` to `.env.local` and fill in the values.
-5. Install packages:
-   `npm install`
-6. Run:
-   `npm run dev`
+Never commit secrets. Supabase recommends environment variables for deployed credentials. citeturn0search1
 
-## Stripe
+## CSV import columns
+`title,description,property_type,address,city,state,zip,monthly_rent,bedrooms,bathrooms,available_on`
 
-The MVP charges exactly $5 USD per publish/renewal. Rent payments are not processed by this app.
+CSV imports create paused listings so the owner can review them before publication/payment.
 
-## Production hardening still recommended
+## Pricing math
+Portfolio pricing is based on active advertised listings, not every unit owned. This makes the economics work for apartment communities with many occupied units and a smaller number of vacancies.
 
-Before public launch, add:
-- server-side validation/schema validation
-- rate limiting and abuse prevention
-- image moderation and stronger image validation
-- fair-housing/content moderation rules
-- terms, privacy policy, refund policy, and prohibited-listing policy
-- email notifications and inquiry messaging
-- CAPTCHA/bot protection
-- admin moderation tools
-- automated tests
-- error monitoring
-- stronger storage path authorization
-- legal review of local/state rental rules
-
-## Social sharing
-Listing detail pages include share actions for Facebook, X, WhatsApp, LinkedIn, email, native device sharing, and copy-link. Listing pages also generate Open Graph and Twitter metadata so shared links have useful previews.
-
-## Social connectors
-RentHub now supports connector-based social sign-in through Supabase Auth: **Google, Apple, and Facebook**, plus email magic-link sign-in. Configure the three providers in Supabase Authentication → Sign In / Providers and set each provider callback to the Supabase callback URL shown in the provider settings.
-
-The app callback route is `/auth/callback`, which exchanges the OAuth code for a Supabase session and returns the user to the requested page. Social sharing remains available for Facebook, X, WhatsApp, LinkedIn, email, native device sharing, and copy-link.
-
-For production, keep provider secrets in Supabase/server environment settings—never in browser code or source control.
-
-
-## Social publishing connectors
-Owners can connect Facebook Pages, LinkedIn, and X using OAuth and publish their live RentHub listings directly. Credentials and access tokens stay server-side and are encrypted at rest. See `CONNECTORS.md`.
-
-
-## Production QA
-See `PRODUCTION-QA.md` and `RELEASE.md` before deploying publicly.
+## Production review
+The v12 package is a consolidated product build. Before public launch, verify environment variables, Supabase RLS, Stripe webhook delivery, social OAuth callbacks, Vercel cron authorization, map/geocoding rate limits, email delivery, and a full production build/typecheck in the deployment environment.
