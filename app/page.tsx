@@ -34,7 +34,7 @@ export default function Home() {
 
     <section className="section">
       <div className="container">
-        <div className="section-heading"><div><span className="eyebrow">WHY RENTHUB</span><h2>Less friction. More results.</h2></div><p className="muted">Every major workflow is designed to get users from search to decision faster.</p></div>
+        <div className="section-heading"><div><span className="eyebrow">Why RentHub</span><h2>Less friction. More results.</h2></div><p className="muted">Every major workflow is designed to get users from search to decision faster.</p></div>
         <div className="feature-grid">
           <Feature title="Search the way you think" text="Use location, price, bedrooms, property type and map browsing without digging through clutter." icon="⌕" />
           <Feature title="Know the real monthly cost" text="Show rent, recurring fees and key move-in costs clearly so renters can compare apples to apples." icon="$" />

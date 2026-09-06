@@ -20,3 +20,11 @@ RentHub uses a navy, gray and silver visual system designed to feel trustworthy,
 7. **Mobile-first navigation** with a compact menu on smaller screens.
 8. **Accessible focus states** and readable contrast.
 9. **Consistent navy / gray / silver palette** across the product.
+
+## Spelling
+Always write the brand as **RentHub** (capital R, capital H, one word) in all user-facing media: UI, emails, social, ads, presentations, and legal copy.
+- Correct: RentHub
+- Incorrect: Renthub, Rent Hub, rent hub, Rent-Hub, RENT HUB
+- All-caps logos may render as RENTHUB only when the full wordmark is intentionally set in capitals; prefer **RentHub** in sentence/title case.
+- File names and package ids may stay lowercase () for URLs; visible text must still say RentHub.
+
