@@ -26,5 +26,5 @@ Always write the brand as **RentHub** (capital R, capital H, one word) in all us
 - Correct: RentHub
 - Incorrect: Renthub, Rent Hub, rent hub, Rent-Hub, RENT HUB
 - All-caps logos may render as RENTHUB only when the full wordmark is intentionally set in capitals; prefer **RentHub** in sentence/title case.
-- File names and package ids may stay lowercase () for URLs; visible text must still say RentHub.
+- File names and package ids may stay lowercase (e.g. renthub-logo.svg) for URLs; visible text must still say RentHub.
 
