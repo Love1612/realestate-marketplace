@@ -2,9 +2,11 @@
 
 Goal: prove RentHub in **one city** before national spend.
 
+**Decided launch city:** St. Louis, MO
+
 ## 0. Decide
 
-- [ ] Choose launch city (example candidates: St. Louis, Chicago, Dallas, Atlanta, Houston, Phoenix)
+- [x] Choose launch city: **St. Louis, MO**
 - [ ] Confirm primary renter email for ops: `dondejuan25@gmail.com`
 - [ ] Confirm brand spelling **RentHub** on all Phase 1 creative
 
