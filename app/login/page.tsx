@@ -21,11 +21,15 @@ function LoginForm() {
     setError("");
     const supabase=createClient();
     const next=params.get("next") || "/dashboard";
-    const {error}=await supabase.auth.signInWithOAuth({
+    const {data,error}=await supabase.auth.signInWithOAuth({
       provider,
-      options:{redirectTo:`${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`}
+      options:{
+        redirectTo:`${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+        skipBrowserRedirect:false
+      }
     });
-    if(error) setError(error.message);
+    if(error) { setError(error.message); return; }
+    if(data?.url) window.location.assign(data.url);
   }
 
   return <main className="section"><div className="container"><div className="form">
