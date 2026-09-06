@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase";
 
-export default function Login() {
+function LoginForm() {
   const params = useSearchParams();
   const [email,setEmail] = useState("");
   const [sent,setSent] = useState(false);
@@ -41,4 +41,10 @@ export default function Login() {
     {sent ? <div className="alert success">Check your email for your secure sign-in link.</div> :
       <form onSubmit={submit}><div className="field"><label>Email address</label><input className="input" type="email" required value={email} onChange={e=>setEmail(e.target.value)} placeholder="you@example.com" /></div><button className="btn btn-primary">Send sign-in link</button></form>}
   </div></div></main>
+}
+
+export default function Login() {
+  return <Suspense fallback={<main className="section"><div className="container"><p className="muted">Loading sign-in…</p></div></main>}>
+    <LoginForm />
+  </Suspense>
 }
