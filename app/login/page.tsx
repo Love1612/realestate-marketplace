@@ -12,24 +12,33 @@ function LoginForm() {
 
   async function submit(e:React.FormEvent) {
     e.preventDefault(); setError("");
-    const supabase=createClient();
-    const {error}=await supabase.auth.signInWithOtp({email, options:{emailRedirectTo:`${window.location.origin}${params.get("next") || "/dashboard"}`}});
-    if(error) setError(error.message); else setSent(true);
+    try {
+      const supabase=createClient();
+      const {error}=await supabase.auth.signInWithOtp({email, options:{emailRedirectTo:`${window.location.origin}${params.get("next") || "/dashboard"}`}});
+      if(error) setError(error.message); else setSent(true);
+    } catch (err:any) {
+      setError(err?.message || "Sign-in failed. Check Supabase configuration.");
+    }
   }
 
   async function oauth(provider:"google"|"apple"|"facebook") {
     setError("");
-    const supabase=createClient();
-    const next=params.get("next") || "/dashboard";
-    const {data,error}=await supabase.auth.signInWithOAuth({
-      provider,
-      options:{
-        redirectTo:`${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
-        skipBrowserRedirect:false
-      }
-    });
-    if(error) { setError(error.message); return; }
-    if(data?.url) window.location.assign(data.url);
+    try {
+      const supabase=createClient();
+      const next=params.get("next") || "/dashboard";
+      const {data,error}=await supabase.auth.signInWithOAuth({
+        provider,
+        options:{
+          redirectTo:`${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+          skipBrowserRedirect:false
+        }
+      });
+      if(error) { setError(error.message); return; }
+      if(data?.url) window.location.assign(data.url);
+      else setError("Could not start social sign-in. Provider may not be enabled.");
+    } catch (err:any) {
+      setError(err?.message || "Social sign-in failed. Check configuration.");
+    }
   }
 
   return <main className="section"><div className="container"><div className="form">
