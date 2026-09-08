@@ -4,7 +4,7 @@ export default function Portfolio(){
   const [loading,setLoading]=useState(true);
   const [file,setFile]=useState<File|null>(null);
   const [tier,setTier]=useState('10');
-  const [pack,setPack]=useState('b8');
+  const [pack,setPack]=useState('b10');
   async function load(){const r=await fetch('/api/portfolio');if(r.ok)setD(await r.json());setLoading(false)}
   useEffect(()=>{load()},[]);
   async function importCsv(){if(!file)return;const f=new FormData();f.append('file',file);const r=await fetch('/api/bulk-import',{method:'POST',body:f});const x=await r.json();alert(`Imported ${x.created?.length||0} listings. ${x.errors?.length||0} rows need review.`);load()}
@@ -14,7 +14,7 @@ export default function Portfolio(){
   if(loading)return <main className="section"><div className="container">Loading portfolio…</div></main>;
   return <main className="section"><div className="container">
     <h1>{d?.organization?.name||'Portfolio'}</h1>
-    <p className="muted">Manage vacancies for one apartment building or a whole portfolio. You only pay for units you advertise.</p>
+    <p className="muted">$5 each under 10 vacancies. 10 or more advertised units at a building: $2.50 each.</p>
     <div className="grid">
       <div className="panel"><strong>Plan</strong><h2>{d?.billing?.tier||'10'} active listings</h2><p className="muted">{d?.billing?.active_listings_limit||10} active listings included.</p></div>
       <div className="panel"><strong>Active listings</strong><h2>{(d?.listings||[]).filter((x:any)=>x.status==='live').length}</h2><p className="muted">Only advertised vacancies count toward capacity.</p></div>
@@ -22,13 +22,13 @@ export default function Portfolio(){
     </div>
     <div className="panel" style={{marginTop:20}}>
       <h2>Apartment building pack</h2>
-      <p className="muted">30 days. Bulk price for vacant units at one building. Occupied apartments do not count.</p>
+      <p className="muted">30 days. Volume rate starts at 10 vacant units — $2.50 a door. Occupied apartments do not count.</p>
       <div className="dashboard-actions">
         <select className="input" value={pack} onChange={e=>setPack(e.target.value)}>
-          <option value="b4">4 vacancies · $16 / 30 days</option>
-          <option value="b8">8 vacancies · $28 / 30 days</option>
-          <option value="b16">16 vacancies · $48 / 30 days</option>
-          <option value="b32">32 vacancies · $80 / 30 days</option>
+          <option value="b4">4 vacancies · $20 ($5 each)</option>
+          <option value="b10">10 vacancies · $25 ($2.50 each)</option>
+          <option value="b16">16 vacancies · $40 ($2.50 each)</option>
+          <option value="b32">32 vacancies · $80 ($2.50 each)</option>
         </select>
         <button className="btn btn-primary" onClick={buyBuilding}>Buy building pack</button>
       </div>
