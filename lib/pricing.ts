@@ -2,13 +2,22 @@ export const LISTING_PLANS = {
   basic: {name:'Basic', cents:500, label:'$5 / 30 days', multiplier:1},
 } as const;
 
-/** Single-building packs. Price is for advertised vacancies only, not every unit in the building. */
+export const SINGLE_UNIT_PRICE = 5;
+export const BULK_THRESHOLD = 10;
+export const BULK_UNIT_PRICE = 2.5;
+
+/** Under 10 vacancies: $5 each. 10 or more advertised units: $2.50 each for 30 days. */
+export function buildingBulkPrice(units:number){
+  if(units < BULK_THRESHOLD) return units * SINGLE_UNIT_PRICE;
+  return units * BULK_UNIT_PRICE;
+}
+
 export const BUILDING_BULK_PACKS = [
-  {tier:'b4', units:4, price:16, perUnit:4, label:'Small building', blurb:'Up to 4 vacant units at one address. Photos + basics for 30 days.'},
-  {tier:'b8', units:8, price:28, perUnit:3.5, label:'Walk-up / small community', blurb:'Up to 8 advertised vacancies. Better than $5 each.'},
-  {tier:'b16', units:16, price:48, perUnit:3, label:'Mid-size building', blurb:'Up to 16 open units. One checkout for the whole building.'},
-  {tier:'b32', units:32, price:80, perUnit:2.5, label:'Large building', blurb:'Up to 32 advertised vacancies at one community.'},
-  {tier:'b64', units:64, price:null, perUnit:null, label:'Full community 64+', blurb:'Custom quote for big properties and multi-building sites.'},
+  {tier:'b4', units:4, price:20, perUnit:5, label:'Under 10 units', blurb:'1–9 vacancies stay $5 each. No volume rate yet.'},
+  {tier:'b10', units:10, price:25, perUnit:2.5, label:'Volume rate starts', blurb:'10 advertised vacancies. $2.50 each — 50% off $5.'},
+  {tier:'b16', units:16, price:40, perUnit:2.5, label:'Mid-size building', blurb:'16 open units at $2.50. Occupied doors do not count.'},
+  {tier:'b32', units:32, price:80, perUnit:2.5, label:'Large building', blurb:'32 advertised vacancies at $2.50 each.'},
+  {tier:'b64', units:64, price:null, perUnit:2.5, label:'Full community 64+', blurb:'Custom quote. Same idea: only vacant units, $2.50 once you clear 10.'},
 ] as const;
 
 export const PORTFOLIO_TIERS = [
